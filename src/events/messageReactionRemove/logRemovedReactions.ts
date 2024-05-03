@@ -8,6 +8,7 @@ import {
 } from 'discord.js';
 import { bot } from '../..';
 import { emojiToUnicode } from '../../utils/emojiToUnicode';
+import { is404 } from '../../utils/is404';
 
 export default async (
   reaction: MessageReaction | PartialMessageReaction,
@@ -38,9 +39,21 @@ export default async (
     ? emojiToUnicode(reaction.emoji.name)
     : null;
 
-  const emojiURL =
-    reaction.emoji.imageURL() ||
-    `https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/${emojiUnicode}.png`;
+  let twemojiImage = emojiUnicode
+    ? `https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/${emojiUnicode}.png`
+    : null;
+
+  if (emojiUnicode && twemojiImage) {
+    if (await is404(twemojiImage)) {
+      // Emoji not found in Twemoji, trying Unicode without "fe0f"
+      twemojiImage = `https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/${emojiUnicode
+        .split('-')
+        .filter((char) => char !== 'fe0f')
+        .join('-')}.png`;
+    }
+  }
+
+  const emojiURL = reaction.emoji.imageURL() || twemojiImage;
 
   const emojiName = reaction.emoji.id
     ? `<:${reaction.emoji.name}:${reaction.emoji.id}>`
