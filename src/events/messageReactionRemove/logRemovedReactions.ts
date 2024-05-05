@@ -39,14 +39,15 @@ export default async (
     ? emojiToUnicode(reaction.emoji.name)
     : null;
 
+  // Uses https://github.com/jdecked/twemoji to get Twemoji images for all default emojis
   let twemojiImage = emojiUnicode
-    ? `https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/${emojiUnicode}.png`
+    ? `https://raw.githubusercontent.com/jdecked/twemoji/main/assets/72x72/${emojiUnicode}.png`
     : null;
 
   if (emojiUnicode && twemojiImage) {
     if (await is404(twemojiImage)) {
       // Emoji not found in Twemoji, trying Unicode without "fe0f"
-      twemojiImage = `https://raw.githubusercontent.com/twitter/twemoji/master/assets/72x72/${emojiUnicode
+      twemojiImage = `https://raw.githubusercontent.com/jdecked/twemoji/main/assets/72x72/${emojiUnicode
         .split('-')
         .filter((char) => char !== 'fe0f')
         .join('-')}.png`;
