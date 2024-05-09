@@ -47,7 +47,7 @@ export class Bot {
         `\x1b[31m♥\x1b[0m ${this._client.user?.username} is online. \x1b[40m●ྌ●\x1b[0m`
       );
 
-      new Activity(this._client, status, 60).startCycle();
+      new Activity(this._client, status, 120).startCycle();
 
       this.registerSlashCommands();
       this.fetchChannels();
