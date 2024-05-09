@@ -1,7 +1,7 @@
 {
-  "name": "synthesize-bot",
+  "name": "synthesize",
   "version": "1.0.0",
-  "description": "",
+  "description": "Your virtual ally, fabricating new dimensions of engaging interactions!",
   "main": "dist/index.js",
   "scripts": {
     "dev": "tsx watch src/index.ts",
@@ -9,7 +9,7 @@
     "start": "node ."
   },
   "keywords": [],
-  "author": "",
+  "author": "Quinn Trip",
   "license": "ISC",
   "dependencies": {
     "discord.js": "^14.14.1",
