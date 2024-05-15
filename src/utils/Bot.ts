@@ -29,6 +29,8 @@ let status = [
 export class Bot {
   public slashCommands = new Array<SlashCommandBuilder>();
   public slashCommandsMap = new Map<string, Command>();
+  public globalSlashCommands = new Array<SlashCommandBuilder>();
+  public globalSlashCommandsMap = new Map<string, Command>();
   public cooldowns = new Map<string, Map<Snowflake, number>>();
 
   constructor(private _client: Client, private _token: string) {
@@ -57,19 +59,33 @@ export class Bot {
     this.onInteractionCreate();
   }
 
-  private registerSlashCommands() {
-    const commandFiles: Command[] = readdirSync(
-      join(__dirname, '..', 'commands')
-    )
-      .filter((file) => /\.(js|ts)$/.test(file))
-      .map((file) => require(`../commands/${file}`).default);
+  private async registerSlashCommands() {
+    const commandDirs = {
+      guild: 'commands/guild',
+      global: 'commands/global',
+    } as const;
 
-    for (const command of commandFiles) {
-      this.slashCommands.push(command.data);
-      this.slashCommandsMap.set(command.data.name, command);
+    for (const [type, path] of Object.entries(commandDirs)) {
+      const commandFiles: Command[] = readdirSync(join(__dirname, '..', path))
+        .filter((file) => /\.(js|ts)$/.test(file))
+        .map((file) => require(`../${path}/${file}`).default);
+
+      for (const command of commandFiles) {
+        if (type === 'guild') {
+          this.slashCommands.push(command.data);
+          this.slashCommandsMap.set(command.data.name, command);
+        } else {
+          this.globalSlashCommands.push(command.data);
+          this.globalSlashCommandsMap.set(command.data.name, command);
+        }
+      }
+
+      await registerSlashCommands(
+        type === 'guild' ? this.slashCommands : this.globalSlashCommands,
+        this._client,
+        type as 'guild' | 'global'
+      );
     }
-
-    registerSlashCommands(this.slashCommands, this._client);
   }
 
   private async onInteractionCreate() {
@@ -81,7 +97,9 @@ export class Bot {
 
           const cmdName = interaction.commandName;
 
-          const cmd = this.slashCommandsMap.get(interaction.commandName);
+          const cmd =
+            this.slashCommandsMap.get(interaction.commandName) ||
+            this.globalSlashCommandsMap.get(interaction.commandName);
 
           if (!cmd) return;
 
